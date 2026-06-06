@@ -1,0 +1,164 @@
+// ============================================================
+// routes/products.js — CRUD de productos (tenis)
+// ============================================================
+
+const express = require("express");
+const router = express.Router();
+const Tenis = require("../models/Tenis");
+
+// GET /api/products — Obtener todos los productos
+router.get("/", async (req, res) => {
+  try {
+    const { marca, precioMax, talla } = req.query;
+    const filtro = {};
+
+    if (marca) filtro.marca = new RegExp(marca, "i");
+    if (precioMax) filtro.precio = { $lte: Number(precioMax) };
+    if (talla) filtro.tallasDisponibles = Number(talla);
+
+    const tenis = await Tenis.find(filtro).sort({ createdAt: -1 });
+    res.json(tenis);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener los productos." });
+  }
+});
+
+// GET /api/products/:id — Obtener un producto por ID
+router.get("/:id", async (req, res) => {
+  try {
+    const tenis = await Tenis.findById(req.params.id);
+    if (!tenis) return res.status(404).json({ error: "Producto no encontrado." });
+    res.json(tenis);
+  } catch (error) {
+    res.status(500).json({ error: "Error al buscar el producto." });
+  }
+});
+
+// POST /api/products — Crear un nuevo producto
+router.post("/", async (req, res) => {
+  try {
+    const nuevoTenis = new Tenis(req.body);
+    const guardado = await nuevoTenis.save();
+    res.status(201).json(guardado);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// PUT /api/products/:id — Actualizar un producto
+router.put("/:id", async (req, res) => {
+  try {
+    const actualizado = await Tenis.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+    if (!actualizado) return res.status(404).json({ error: "Producto no encontrado." });
+    res.json(actualizado);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// DELETE /api/products/:id — Eliminar un producto
+router.delete("/:id", async (req, res) => {
+  try {
+    const eliminado = await Tenis.findByIdAndDelete(req.params.id);
+    if (!eliminado) return res.status(404).json({ error: "Producto no encontrado." });
+    res.json({ message: "Producto eliminado correctamente." });
+  } catch (error) {
+    res.status(500).json({ error: "Error al eliminar el producto." });
+  }
+});
+
+// POST /api/products/seed — Poblar la BD con datos de ejemplo
+router.post("/seed/demo", async (req, res) => {
+  try {
+    await Tenis.deleteMany({}); // Limpia la colección primero
+
+    const datosDemostracion = [
+      {
+        titulo: "Air Jordan 1 Retro High OG",
+        marca: "Nike",
+        precio: 4299,
+        tallasDisponibles: [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11],
+        stock: 15,
+        descripcion: "El icónico Jordan 1 en colorway Chicago. Historia pura en cada paso. Piel premium, suela Air-Sole y el Swoosh que lo dice todo.",
+        categoria: "retro",
+      },
+      {
+        titulo: "Adidas Yeezy Boost 350 V2 Zebra",
+        marca: "Adidas",
+        precio: 5800,
+        tallasDisponibles: [7, 8, 8.5, 9, 9.5, 10],
+        stock: 8,
+        descripcion: "El Yeezy más buscado de Kanye West. Primeknit monocromo con Boost en la suela para comodidad máxima todo el día.",
+        categoria: "lifestyle",
+      },
+      {
+        titulo: "Nike Dunk Low Panda",
+        marca: "Nike",
+        precio: 2999,
+        tallasDisponibles: [6, 6.5, 7, 7.5, 8, 8.5, 9, 10, 11],
+        stock: 20,
+        descripcion: "El Dunk Low en blanco y negro que redefinió el streetwear. Clean, versátil y siempre fresh. Combina con todo.",
+        categoria: "lifestyle",
+      },
+      {
+        titulo: "New Balance 550 White Green",
+        marca: "New Balance",
+        precio: 2499,
+        tallasDisponibles: [7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5],
+        stock: 12,
+        descripcion: "El retorno de la silueta de basketball de los 80s. Cuero premium con paneles en verde. El favorito de los fashionistas.",
+        categoria: "retro",
+      },
+      {
+        titulo: "Adidas Stan Smith",
+        marca: "Adidas",
+        precio: 1799,
+        tallasDisponibles: [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11],
+        stock: 30,
+        descripcion: "El clásico eterno. Cuero blanco con talón verde y la firma de Stan Smith. Minimalismo que nunca pasa de moda.",
+        categoria: "lifestyle",
+      },
+      {
+        titulo: "Nike Air Max 90",
+        marca: "Nike",
+        precio: 3199,
+        tallasDisponibles: [7, 8, 9, 9.5, 10, 10.5, 11],
+        stock: 10,
+        descripcion: "La unidad Air visible más famosa de Nike. Diseño de Tinker Hatfield que sigue siendo relevante más de 30 años después.",
+        categoria: "running",
+      },
+      {
+        titulo: "Converse Chuck Taylor All Star",
+        marca: "Converse",
+        precio: 1299,
+        tallasDisponibles: [6, 7, 8, 9, 10, 11, 12],
+        stock: 25,
+        descripcion: "La zapatilla más vendida de la historia. Lona robusta, puntera de goma y ese icónico parche en el tobillo.",
+        categoria: "lifestyle",
+      },
+      {
+        titulo: "Vans Old Skool Black White",
+        marca: "Vans",
+        precio: 1599,
+        tallasDisponibles: [6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10],
+        stock: 18,
+        descripcion: "La firma de la cultura skate desde 1977. El swoosh lateral de gamuza y lona es inconfundible. Icono del streetwear global.",
+        categoria: "lifestyle",
+      },
+    ];
+
+    const insertados = await Tenis.insertMany(datosDemostracion);
+    res.status(201).json({
+      message: `✅ ${insertados.length} tenis de demostración agregados correctamente.`,
+      productos: insertados,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error al cargar los datos de demostración." });
+  }
+});
+
+module.exports = router;

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SneakersBoot MX — Asistente Virtual</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ======================================================
+       VARIABLES Y RESET
+    ====================================================== */
+    :root {
+      --black:    #0a0a0a;
+      --dark:     #111111;
+      --card:     #181818;
+      --border:   #2a2a2a;
+      --accent:   #ff3c00;
+      --accent2:  #ff7a00;
+      --white:    #f5f5f5;
+      --muted:    #888888;
+      --user-bg:  #1e1e1e;
+      --bot-bg:   #ff3c00;
+      --radius:   14px;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body:    'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background-image:
+        radial-gradient(ellipse at 20% 0%, rgba(255,60,0,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(255,122,0,0.06) 0%, transparent 50%);
+    }
+
+    /* ======================================================
+       LAYOUT PRINCIPAL
+    ====================================================== */
+    .app-wrapper {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      height: 95vh;
+      max-height: 860px;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    /* ======================================================
+       HEADER
+    ====================================================== */
+    header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--card);
+      flex-shrink: 0;
+    }
+
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .header-text h1 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: 1px;
+      line-height: 1;
+      color: var(--white);
+    }
+
+    .header-text p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+      font-weight: 300;
+    }
+
+    .status-dot {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ======================================================
+       ÁREA DE MENSAJES
+    ====================================================== */
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    #messages::-webkit-scrollbar { width: 4px; }
+    #messages::-webkit-scrollbar-track { background: transparent; }
+    #messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Mensaje individual */
+    .msg {
+      display: flex;
+      gap: 10px;
+      animation: slide-in 0.3s ease forwards;
+      max-width: 80%;
+    }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+    .msg.bot  { align-self: flex-start; }
+
+    .msg-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .msg.bot  .msg-avatar { background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+    .msg.user .msg-avatar { background: var(--border); }
+
+    .msg-bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .msg.bot  .msg-bubble {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+      color: var(--white);
+    }
+
+    .msg.user .msg-bubble {
+      background: var(--accent);
+      border-bottom-right-radius: 4px;
+      color: #fff;
+      font-weight: 500;
+    }
+
+    /* Indicador de "escribiendo..." */
+    .typing-indicator {
+      display: flex;
+      gap: 5px;
+      padding: 14px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      border-bottom-left-radius: 4px;
+      width: fit-content;
+    }
+
+    .typing-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--muted);
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
+      40%           { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* ======================================================
+       QUICK REPLIES (Sugerencias rápidas)
+    ====================================================== */
+    .quick-replies {
+      padding: 12px 24px 0;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+
+    .quick-btn {
+      padding: 7px 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .quick-btn:hover {
+      border-color: var(--accent);
+      color: var(--white);
+      background: rgba(255,60,0,0.08);
+    }
+
+    /* ======================================================
+       INPUT AREA
+    ====================================================== */
+    .input-area {
+      padding: 16px 24px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--card);
+      flex-shrink: 0;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    #userInput {
+      flex: 1;
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--white);
+      font-family: var(--font-body);
+      font-size: 14px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s;
+      min-height: 44px;
+      max-height: 120px;
+      line-height: 1.5;
+    }
+
+    #userInput::placeholder { color: var(--muted); }
+    #userInput:focus { border-color: var(--accent); }
+
+    #sendBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s, opacity 0.15s;
+      flex-shrink: 0;
+    }
+
+    #sendBtn:hover  { transform: scale(1.06); }
+    #sendBtn:active { transform: scale(0.96); }
+    #sendBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    #sendBtn svg { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .input-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ======================================================
+       MENSAJE DE BIENVENIDA
+    ====================================================== */
+    .welcome-msg {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .welcome-msg .emoji { font-size: 36px; margin-bottom: 8px; }
+    .welcome-msg h2 { font-family: var(--font-display); font-size: 26px; letter-spacing: 1px; color: var(--white); }
+    .welcome-msg p  { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-badge">👟</div>
+    <div class="header-text">
+      <h1>SNEAKERSBOOT MX</h1>
+      <p>Asistente virtual · Kicks AI</p>
+    </div>
+    <div class="status-dot">
+      <span class="dot"></span>
+      En línea
+    </div>
+  </header>
+
+  <!-- MENSAJES -->
+  <div id="messages">
+    <div class="welcome-msg">
+      <div class="emoji">🔥</div>
+      <h2>¿QUÉ ONDA, SNEAKERHEAD?</h2>
+      <p>Pregúntame por modelos, tallas, precios o novedades.</p>
+    </div>
+
+    <!-- Mensaje inicial del bot -->
+    <div class="msg bot">
+      <div class="msg-avatar">👟</div>
+      <div class="msg-bubble">
+        ¡Qué onda! Soy <strong>Kicks</strong>, tu experto en tenis de SneakersBoot MX 🔥
+        Cuéntame qué buscas: ¿una marca específica, tu talla, o tienes algún presupuesto en mente?
+      </div>
+    </div>
+  </div>
+
+  <!-- SUGERENCIAS RÁPIDAS -->
+  <div class="quick-replies" id="quickReplies">
+    <button class="quick-btn" onclick="sendQuick(this)">Ver catálogo completo</button>
+    <button class="quick-btn" onclick="sendQuick(this)">Tenis Nike disponibles</button>
+    <button class="quick-btn" onclick="sendQuick(this)">Opciones bajo $2,500</button>
+    <button class="quick-btn" onclick="sendQuick(this)">Tengo talla 9 US</button>
+    <button class="quick-btn" onclick="sendQuick(this)">Jordans disponibles</button>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-area">
+    <div class="input-row">
+      <textarea
+        id="userInput"
+        placeholder="Escribe tu pregunta..."
+        rows="1"
+      ></textarea>
+      <button id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" width="18" height="18">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <p class="input-hint">Enter para enviar · Shift+Enter para nueva línea</p>
+  </div>
+
+</div>
+
+<!-- ======================================================
+     JAVASCRIPT DEL CHAT
+====================================================== -->
+<script>
+  const messagesEl  = document.getElementById("messages");
+  const inputEl     = document.getElementById("userInput");
+  const sendBtn     = document.getElementById("sendBtn");
+
+  // Historial de la conversación (se envía al servidor para contexto)
+  let conversationHistory = [];
+
+  // Auto-crecer el textarea
+  inputEl.addEventListener("input", () => {
+    inputEl.style.height = "auto";
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
+  });
+
+  // Enter para enviar, Shift+Enter para salto de línea
+  inputEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Enviar al hacer clic en un quick reply
+  function sendQuick(btn) {
+    inputEl.value = btn.textContent;
+    sendMessage();
+  }
+
+  // Función principal de envío
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    // Limpiar input y deshabilitar
+    inputEl.value = "";
+    inputEl.style.height = "auto";
+    sendBtn.disabled = true;
+
+    // Mostrar mensaje del usuario
+    appendMessage("user", text);
+
+    // Mostrar indicador de escritura
+    const typingEl = showTyping();
+
+    try {
+      // Llamada a la API del backend
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          history: conversationHistory
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error en el servidor");
+
+      const data = await response.json();
+
+      // Actualizar historial con la respuesta
+      conversationHistory = data.history || conversationHistory;
+
+      // Mostrar respuesta del bot
+      typingEl.remove();
+      appendMessage("bot", data.reply);
+
+    } catch (error) {
+      typingEl.remove();
+      appendMessage("bot", "❌ Oops, algo salió mal. Verifica tu conexión e intenta de nuevo.");
+      console.error(error);
+    }
+
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+
+  // Agrega un mensaje al DOM
+  function appendMessage(role, text) {
+    const isBot = role === "bot";
+
+    const msgDiv = document.createElement("div");
+    msgDiv.className = `msg ${isBot ? "bot" : "user"}`;
+
+    // Convierte saltos de línea y negritas básicas
+    const formatted = text
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\n/g, "<br>");
+
+    msgDiv.innerHTML = `
+      <div class="msg-avatar">${isBot ? "👟" : "🧑"}</div>
+      <div class="msg-bubble">${formatted}</div>
+    `;
+
+    messagesEl.appendChild(msgDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // Muestra el indicador de "escribiendo..."
+  function showTyping() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "msg bot";
+    wrapper.innerHTML = `
+      <div class="msg-avatar">👟</div>
+      <div class="typing-indicator">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+      </div>
+    `;
+    messagesEl.appendChild(wrapper);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return wrapper;
+  }
+</script>
+
+</body>
+</html>
