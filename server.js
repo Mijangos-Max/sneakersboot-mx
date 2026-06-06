@@ -12,6 +12,8 @@ const path = require("path");
 const chatRoutes = require("./routes/chat");
 const productRoutes = require("./routes/products");
 
+require("./bot");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
