@@ -6,17 +6,41 @@ const express = require("express");
 const router = express.Router();
 const Tenis = require("../models/Tenis");
 
+// Middleware de seguridad para endpoints administrativos
+const requireAuth = (req, res, next) => {
+  const token = req.headers["authorization"];
+  // Si no se define ADMIN_TOKEN en .env, permite todo para evitar bloqueos en desarrollo
+  // En un entorno de producción estricto, esto debería bloquear por defecto.
+  if (!process.env.ADMIN_TOKEN) {
+    console.warn("⚠️ Advertencia de Seguridad: ADMIN_TOKEN no está configurado en .env.");
+    return next();
+  }
+  if (token === `Bearer ${process.env.ADMIN_TOKEN}` || token === process.env.ADMIN_TOKEN) {
+    next();
+  } else {
+    res.status(401).json({ error: "Acceso no autorizado." });
+  }
+};
+
 // GET /api/products — Obtener todos los productos
 router.get("/", async (req, res) => {
   try {
-    const { marca, precioMax, talla } = req.query;
+    const { marca, precioMax, talla, page = 1, limit = 10 } = req.query;
     const filtro = {};
 
-    if (marca) filtro.marca = new RegExp(marca, "i");
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Sanitiza regex
+    if (marca) filtro.marca = new RegExp(escapeRegex(marca), "i");
     if (precioMax) filtro.precio = { $lte: Number(precioMax) };
     if (talla) filtro.tallasDisponibles = Number(talla);
 
-    const tenis = await Tenis.find(filtro).sort({ createdAt: -1 });
+    const limiteNumerico = Math.max(1, parseInt(limit));
+    const saltar = (Math.max(1, parseInt(page)) - 1) * limiteNumerico;
+
+    const tenis = await Tenis.find(filtro)
+      .sort({ createdAt: -1 })
+      .skip(saltar)
+      .limit(limiteNumerico);
+      
     res.json(tenis);
   } catch (error) {
     res.status(500).json({ error: "Error al obtener los productos." });
@@ -35,7 +59,7 @@ router.get("/:id", async (req, res) => {
 });
 
 // POST /api/products — Crear un nuevo producto
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   try {
     const nuevoTenis = new Tenis(req.body);
     const guardado = await nuevoTenis.save();
@@ -46,7 +70,7 @@ router.post("/", async (req, res) => {
 });
 
 // PUT /api/products/:id — Actualizar un producto
-router.put("/:id", async (req, res) => {
+router.put("/:id", requireAuth, async (req, res) => {
   try {
     const actualizado = await Tenis.findByIdAndUpdate(
       req.params.id,
@@ -61,7 +85,7 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE /api/products/:id — Eliminar un producto
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", requireAuth, async (req, res) => {
   try {
     const eliminado = await Tenis.findByIdAndDelete(req.params.id);
     if (!eliminado) return res.status(404).json({ error: "Producto no encontrado." });
@@ -72,7 +96,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // POST /api/products/seed — Poblar la BD con datos de ejemplo
-router.post("/seed/demo", async (req, res) => {
+router.post("/seed/demo", requireAuth, async (req, res) => {
   try {
     await Tenis.deleteMany({}); // Limpia la colección primero
 

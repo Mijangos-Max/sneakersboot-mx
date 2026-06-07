@@ -20,7 +20,11 @@ const PORT = process.env.PORT || 3000;
 // ============================================================
 // MIDDLEWARES GLOBALES
 // ============================================================
-app.use(cors());                          // Permite peticiones desde el frontend
+const corsOptions = {
+  origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : '*',
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));               // Permite peticiones seguras desde el frontend
 app.use(express.json());                  // Parsea el body de las peticiones como JSON
 app.use(express.static(path.join(__dirname, "public"))); // Sirve el frontend estático
 
@@ -59,6 +63,22 @@ app.use((err, req, res, next) => {
 // ============================================================
 // INICIAR SERVIDOR
 // ============================================================
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 SneakersBoot MX corriendo en http://localhost:${PORT}`);
 });
+
+// ============================================================
+// GRACEFUL SHUTDOWN (Apagado Elegante)
+// ============================================================
+const gracefulShutdown = () => {
+  console.log("\n🛑 Señal de apagado recibida. Cerrando el servidor de forma segura...");
+  server.close(async () => {
+    console.log("Cerrando la conexión a MongoDB...");
+    await mongoose.connection.close(false);
+    console.log("✅ Conexiones cerradas. Servidor apagado correctamente.");
+    process.exit(0);
+  });
+};
+
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
