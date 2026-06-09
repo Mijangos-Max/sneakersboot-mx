@@ -109,6 +109,7 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 15,
         descripcion: "El icónico Jordan 1 en colorway Chicago. Historia pura en cada paso. Piel premium, suela Air-Sole y el Swoosh que lo dice todo.",
         categoria: "retro",
+        imagen: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&q=80"
       },
       {
         titulo: "Adidas Yeezy Boost 350 V2 Zebra",
@@ -118,6 +119,7 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 8,
         descripcion: "El Yeezy más buscado de Kanye West. Primeknit monocromo con Boost en la suela para comodidad máxima todo el día.",
         categoria: "lifestyle",
+        imagen: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=500&q=80"
       },
       {
         titulo: "Nike Dunk Low Panda",
@@ -127,6 +129,7 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 20,
         descripcion: "El Dunk Low en blanco y negro que redefinió el streetwear. Clean, versátil y siempre fresh. Combina con todo.",
         categoria: "lifestyle",
+        imagen: "https://images.unsplash.com/photo-1552346154-21d32810baa3?w=500&q=80"
       },
       {
         titulo: "New Balance 550 White Green",
@@ -136,6 +139,7 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 12,
         descripcion: "El retorno de la silueta de basketball de los 80s. Cuero premium con paneles en verde. El favorito de los fashionistas.",
         categoria: "retro",
+        imagen: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=500&q=80"
       },
       {
         titulo: "Adidas Stan Smith",
@@ -145,6 +149,7 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 30,
         descripcion: "El clásico eterno. Cuero blanco con talón verde y la firma de Stan Smith. Minimalismo que nunca pasa de moda.",
         categoria: "lifestyle",
+        imagen: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=500&q=80"
       },
       {
         titulo: "Nike Air Max 90",
@@ -154,6 +159,7 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 10,
         descripcion: "La unidad Air visible más famosa de Nike. Diseño de Tinker Hatfield que sigue siendo relevante más de 30 años después.",
         categoria: "running",
+        imagen: "https://images.unsplash.com/photo-1514989940723-e8e51635b782?w=500&q=80"
       },
       {
         titulo: "Converse Chuck Taylor All Star",
@@ -163,6 +169,7 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 25,
         descripcion: "La zapatilla más vendida de la historia. Lona robusta, puntera de goma y ese icónico parche en el tobillo.",
         categoria: "lifestyle",
+        imagen: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=500&q=80"
       },
       {
         titulo: "Vans Old Skool Black White",
@@ -172,7 +179,8 @@ router.post("/seed/demo", requireAuth, async (req, res) => {
         stock: 18,
         descripcion: "La firma de la cultura skate desde 1977. El swoosh lateral de gamuza y lona es inconfundible. Icono del streetwear global.",
         categoria: "lifestyle",
-      },
+        imagen: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?w=500&q=80"
+      }
     ];
 
     const insertados = await Tenis.insertMany(datosDemostracion);
